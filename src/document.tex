@@ -1,0 +1,93 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{listings}
+\usepackage{mathpartir}
+\usepackage{xcolor}
+\usepackage{mathtools}
+\usepackage{wasysym}
+\usepackage{agda}
+\usepackage{src/agdadimmed}
+\usepackage{newunicodechar}
+\usepackage{boxedminipage}
+\usepackage{graphicx}
+\usepackage[sort,comma]{natbib}
+\setcitestyle{authoryear,open={(},close={)}}
+\usepackage[capitalise,noabbrev]{cleveref}
+
+% % adjust outrageous indent on itemized lists
+% \usepackage{enumitem}
+% \setlist[itemize,1]{leftmargin=\dimexpr 2em}
+
+\makeatletter
+\newcommand{\crefnames}[3]{%
+  \@for\next:=#1\do{%
+    \expandafter\crefname\expandafter{\next}{#2}{#3}%
+  }%
+}
+\makeatother
+
+\crefnames{section}{\S}{\S\S}
+
+%%
+%% Agda typesetting commands shorthands, for
+%% manual typesetting of inline code
+%%
+
+\newcommand{\af}{\AgdaFunction}
+\newcommand{\un}{\AgdaUnderscore}
+\newcommand{\ad}{\AgdaDatatype}
+\newcommand{\ab}{\AgdaBound}
+\newcommand{\ac}{\AgdaInductiveConstructor}
+\newcommand{\aF}{\AgdaField}
+\newcommand{\as}{\AgdaSymbol}
+\newcommand{\ak}{\AgdaKeyword}
+\newcommand{\ap}{\AgdaPrimitiveType}
+\newcommand{\an}{\AgdaNumber}
+\newcommand{\aC}{\AgdaComment}
+\newcommand{\am}{\AgdaModule}
+
+\setlength{\parskip}{0em} 
+\setlength\mathindent{0.2cm}
+
+
+%%
+%% Unicode for typesetting Agda code
+\input{src/unicode.tex}
+
+%% Title information
+\title{Capture-Avoiding Substitution for Free}
+
+%% Author with single affiliation.
+\author{Casper Bach Poulsen}
+% \orcid{0000-0003-0622-7639}             %% \orcid is optional
+% \affiliation{
+%   \institution{Delft University of Technology}            %% \institution is required
+%   \country{Netherlands}
+% }
+% \email{c.b.poulsen@tudelft.nl}          %% \email is recommended
+
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+  Lorem ipsum
+\end{abstract}
+
+\input{src/sections/1-introduction.tex}
+
+
+%% Bibliography
+\bibliography{src/references}
+\bibliographystyle{abbrvnat}
+
+
+%% Appendix
+%% \appendix
+%% \section{Appendix}
+%% 
+%% Text of appendix \ldots
+%% 
+\end{document}
