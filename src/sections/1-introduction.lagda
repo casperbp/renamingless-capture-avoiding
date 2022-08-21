@@ -12,6 +12,7 @@ open import Relation.Binary.PropositionalEquality renaming ([_] to P[_])
 open ≡-Reasoning
 open import Relation.Nullary
 open import Relation.Unary using (Pred; IUniversal; _⇒_; _∈_)
+open import Data.Empty
 open import Data.Bool
 open import Data.Product
 open import Data.Sum
@@ -41,6 +42,8 @@ record NameIntf (Name : Set) : Set₁ where
     ｛_｝ : Name → Names
     _∪_ _∩_ : Op₂ Names
 
+    ∅-non-empty : (a : Name) → ∅ ≢ ｛ a ｝
+    ∅-∪ : (x y : Names) → x ∪ y ≡ ∅ → x ≡ ∅ × y ≡ ∅
     ∅-idˡ : LeftIdentity _≡_ ∅ _∪_
     ∅-zeroˡ : LeftZero _≡_ ∅ _∩_
     ∪-comm : Commutative _≡_ _∪_
@@ -92,6 +95,9 @@ record NameIntf (Name : Set) : Set₁ where
           φ  : x ≡ y ∖ z
           qx : Q z
 
+  ε[_] : Pred Names L.zero → Set
+  ε[ P ] = ∀ {x} → x ≡ ∅ → P x
+
   Emp : Pred Names L.zero
   Emp = _≡ ∅
 
@@ -132,23 +138,43 @@ module _ {Name : Set} {NI : NameIntf Name} where
 
   ⟦_/_⟧_ : FV ∅ → (a : Name)
          → {x : Names} → FV x → FV (x ∖ ｛ a ｝)
-  ⟦ e′ / y ⟧ (app (e₁ ⊔⟨ refl ⟩ e₂)) =
+  ⟦ e′ / y ⟧ (app (e₁ ⊔⟨ φ ⟩ e₂)) =
     app ( (⟦ e′ / y ⟧ e₁)
-        ⊔⟨ ∩-distrʳ _ _ _ ⟩
+        ⊔⟨ begin
+             _ ∖ ｛ y ｝
+           ≡⟨ cong (_∖ _) φ ⟩
+             (_ ∪ _) ∖ ｛ y ｝
+           ≡⟨ ∩-distrʳ _ _ _ ⟩
+             _
+           ∎ ⟩
           (⟦ e′ / y ⟧ e₂) )
-  ⟦ e′ / y ⟧ (lam x (e ─⟨ refl ⟩ refl)) with x ≡? y
+  ⟦ e′ / y ⟧ (lam x (e ─⟨ φ₁ ⟩ φ₂)) with x ≡? y
   ... | yes refl =
-    lam x (e ─⟨ trans (∩-assoc _ (｛ y ｝ ᶜ) (｛ y ｝ ᶜ)) (cong (_ ∩_) (∩-idem _)) ⟩ refl)
+    lam x (e ─⟨ begin
+                  _ ∩ (｛ y ｝ ᶜ)
+                ≡⟨ cong (_∩ _) φ₁ ⟩
+                  _ ∩ (｛ y ｝ ᶜ)
+                ≡⟨ cong (λ ■ → (_ ∩ (■ ᶜ)) ∩ _) φ₂ ⟩
+                  _
+                ≡⟨ ∩-assoc _ _ _ ⟩
+                  _
+                ≡⟨ cong (_ ∩_) (∩-idem _) ⟩
+                  _
+                ∎ ⟩ refl)
   ... | no p = 
    lam x ( (⟦ e′ / y ⟧ e)
          ─⟨ begin
-              (names e ∩ (｛ x ｝ ᶜ)) ∩ (｛ y ｝ ᶜ)
+              _
+            ≡⟨ cong (_∩ _) φ₁ ⟩
+              _
+            ≡⟨ cong (λ ■ → (_ ∩ (■ ᶜ)) ∩ _) φ₂ ⟩
+              _
             ≡⟨ ∩-assoc _ _ _ ⟩
-              names e ∩ ((｛ x ｝ ᶜ) ∩ (｛ y ｝ ᶜ))
-            ≡⟨ cong (names e ∩_) (∩-comm _ _) ⟩
-              names e ∩ ((｛ y ｝ ᶜ) ∩ (｛ x ｝ ᶜ))
+              _
+            ≡⟨ cong (_ ∩_) (∩-comm _ _) ⟩
+              _
             ≡˘⟨ ∩-assoc _ _ _ ⟩
-              (names e ∩ (｛ y ｝ ᶜ)) ∩ (｛ x ｝ ᶜ)
+              _
             ∎ ⟩
            refl )
   ⟦ e′ / y ⟧ (var x refl) with x ≡? y
@@ -160,15 +186,20 @@ module _ {Name : Set} {NI : NameIntf Name} where
              ｛ x ｝
            ∎)
 
---   data βh-Res : Set where
---     lam      : (x : Name) → βh-Res
---     timeout  : βh-Res
+  data βh-Res : Set where
+    lam      : (x : Name) → (FV ─ One x) ∅ → βh-Res
+    timeout  :                                βh-Res
 
-  
---   βh-normalize : FV [] → ℕ → βh-Res
---   βh-normalize _ zero    = timeout
---   βh-normalize (lam x e eq)  (suc n) = {!!}
---   βh-normalize (app e e₁ eq) (suc n) = {!!}
+  βh-normalize : ℕ → FV ∅ → βh-Res
+  βh-normalize zero _    = timeout
+  βh-normalize (suc n) (app (e₁ ⊔⟨ φ ⟩ e₂)) with ∅-∪ _ _ (sym φ)
+  ... | (refl , refl) = case βh-normalize n e₁ of λ where
+      (lam x (e ─⟨ φ ⟩ refl)) → case βh-normalize n e₂ of λ where
+        (lam y e′) → βh-normalize n (subst FV (sym φ) (⟦ (lam y e′) / x ⟧ e)) 
+        timeout → timeout
+      timeout → timeout
+  βh-normalize (suc n) (lam x e) = lam x e
+  βh-normalize (suc n) (var x eq) = ⊥-elim (∅-non-empty x eq)
 
 -- --   _[_/⟨_⟩_] : (e e′ : Expr) → FV e′ ≡ [] → (x : Name)
 -- --             → ∃ λ (eᵣ : Expr) → FV eᵣ ≡ filterᵇ (λ y → not (does (x ≡? y))) (FV e)
