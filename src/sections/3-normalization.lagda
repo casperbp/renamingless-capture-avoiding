@@ -16,6 +16,7 @@ open import sections.2-interpretation
 \end{code}
 
 \section{Normalization}
+\label{sec:normalization}
 
 \begin{code}
 record NameSetIntf (Name : Set) : Set₁ where

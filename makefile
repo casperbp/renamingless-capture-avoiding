@@ -4,7 +4,7 @@ SCT := $(SRC)/sections
 PDFLATEX = lualatex -output-directory build/ -interaction=nonstopmode -file-line-error
 LATEXMK  = latexmk -r $(SRC)/latexmkrc
 
-SOURCES := $(patsubst %.lagda,%.tex,$(wildcard $(SCT)/*.lagda))
+SOURCES := $(patsubst %.lagda,%.tex,$(wildcard $(SCT)/*.lagda $(SCT)/*.tex))
 
 all: document.pdf 
 

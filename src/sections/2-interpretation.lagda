@@ -17,42 +17,55 @@ open import Algebra.Definitions
 
 \end{code}
 
-\section{Interpretation}
+\section{Renamingless Capture Avoiding Substitution}
+\label{sec:interpretation}
 
+We present our technique for renamingless capture avoiding substitution by implementing a definitional interpreter for the untyped $\lambda$-calculus in Agda.
+We do not assume familiarity with Agda, but assume some familiarity with typed programming and \emph{generalized algebraic data types} (GADTs).
+We first implement a renamingless substitution function for closed terms, and then show how to generalize this to a renamingless substitution function for open terms.
+
+\subsection{Interpreting Closed $\lambda$ Terms}
+
+For generality, our interpreters are parametric what notion of name they use.
+They only assume that it is decidable whether two names are the same.
+The following module declares these assumptions as parameters:\footnote{The use of underscores declares functions mixfix syntax. For example, \ab{\_≡?\_} is an infix function whose first argument is written to the left of \af{≡?} and whose second argument is to the right.}$^,$\footnote{The \ab{\_≡?\_} parameter has a \emph{dependent type}: it takes two names as input, where the return type depends on these names. The type \ad{Dec}~\as{(}\ab{x}~\ad{≡}~\ab{y}\as{)} represents a proof that \ab{x} and \ab{y} are (un)equal.}
+%
 \begin{code}
-record NameIntf (Name : Set) : Set₁ where
-  field _≡?_ : (x y : Name) → Dec (x ≡ y)
+module Interpreter  (Name : Set)
+                    (_≡?_ : (x y : Name) → Dec (x ≡ y)) where
 \end{code}
-
-\begin{code}[hide]
-module Interpreter (Name : Set) (NI : NameIntf Name) where
-\end{code}
-
+%
+Using these parameters we declare a data type representing untyped $\lambda$ terms:
+%
 \begin{code}
-  open NameIntf NI
- 
-  data Expr : Set where
-    lam : Name → Expr → Expr
-    var : Name → Expr
-    app : (e₁ e₂ : Expr) → Expr
-
-  [_/_]_ : Expr → Name → Expr → Expr
-  [ e′ / y ] (lam x e) = case (x ≡? y) of λ where
-    (yes _) → lam x e
-    (no  _) → lam x ([ e′ / y ] e)
-  [ e′ / y ] (var x) = case (x ≡? y) of λ where
-    (yes _) → e′
+  data Term : Set where
+    lam : Name → Term → Term
+    var : Name → Term
+    app : (t₁ t₂ : Term) → Term
+\end{code}
+%
+The following substitution function is the standard definition of substitution for $\lambda$ terms, assuming that the term being substituted is closed:\footnote{Here, \af{case\_of\_} is a mixfix function whose second argument is a pattern matching function.  The \as{λ}~\ak{where}~$\ldots$ is Agda syntax for a pattern matching function.  Finally, \ac{yes} and \ac{no} are the two constructors of the \ad{Dec} type, each parameterized by either a proof that two names are equal, or a proof that they are not.}
+%
+\begin{code}
+  [_/_]_ : Term → Name → Term → Term
+  [ s / y ] (lam x t) = case (x ≡? y) of λ where
+    (yes  _)  → lam x t
+    (no   _)  → lam x ([ s / y ] t)
+  [ s / y ] (var x) = case (x ≡? y) of λ where
+    (yes _) → s
     (no  _) → var x
-  [ e′ / y ] (app e₁ e₂) = app ([ e′ / y ] e₁) ([ e′ / y ] e₂)
+  [ s / y ] (app t₁ t₂) = app ([ s / y ] t₁) ([ s / y ] t₂)
+\end{code}
 
+\begin{code}
   data Val : Set where
-    lam : Name → Expr → Val
+    lam : Name → Term → Val
 
-  V2E : Val → Expr
+  V2E : Val → Term
   V2E (lam x e) = lam x e
   
   {-# NON_TERMINATING #-}
-  interpret : Expr → Maybe Val
+  interpret : Term → Maybe Val
   interpret (lam x e)   = just (lam x e)
   interpret (var x)     = nothing
   interpret (app e₁ e₂) = case (interpret e₁) of λ where
@@ -63,17 +76,17 @@ module Interpreter (Name : Set) (NI : NameIntf Name) where
 \end{code}
 
 \begin{code}
-  data ExprC (V : Set) : Set where
-    lam : Name → ExprC V → ExprC V
-    var : Name → ExprC V
-    app : (e₁ e₂ : ExprC V) → ExprC V
-    val : V → ExprC V
+  data TermC (V : Set) : Set where
+    lam : Name → TermC V → TermC V
+    var : Name → TermC V
+    app : (e₁ e₂ : TermC V) → TermC V
+    val : V → TermC V
 
   data ValC : Set where
-    lam : Name → ExprC ValC → ValC
+    lam : Name → TermC ValC → ValC
     var : Name → ValC
 
-  ⟨_/_⟩_ : {V : Set} → ExprC V → Name → ExprC V → ExprC V
+  ⟨_/_⟩_ : {V : Set} → TermC V → Name → TermC V → TermC V
   ⟨ e′ / y ⟩ (lam x e) = case (x ≡? y) of λ where
     (yes p) → lam x e
     (no  _) → lam x (⟨ e′ / y ⟩ e)
@@ -84,7 +97,7 @@ module Interpreter (Name : Set) (NI : NameIntf Name) where
   ⟨ e′ / y ⟩ (val v) = val v
 
   {-# NON_TERMINATING #-}
-  interpretC : ExprC ValC → Maybe ValC
+  interpretC : TermC ValC → Maybe ValC
   interpretC (lam x e)   = just (lam x e)
   interpretC (var x)     = just (var x)
   interpretC (app e₁ e₂) = case (interpretC e₁) of λ where
