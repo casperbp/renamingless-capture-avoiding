@@ -2,7 +2,7 @@
 
 module sections.3-normalization where
 
-open import Function using (case_of_)
+open import Function using (case_of_; const)
 open import Relation.Binary.PropositionalEquality hiding ([_])
 open ≡-Reasoning
 open import Relation.Nullary
@@ -64,9 +64,8 @@ record NameSetIntf (Name : Set) : Set₁ where
 \end{code}
 
 \begin{code}[hide]
-module Normalizer (Name : Set) (NI : NameIntf Name) (NSI : NameSetIntf Name) where
+module Normalizer (Name : Set) (_≡?_ : (x y : Name) → Dec (x ≡ y)) (NSI : NameSetIntf Name) where
 
-  open NameIntf NI
   open NameSetIntf NSI
 \end{code}
 
@@ -175,7 +174,7 @@ module Normalizer (Name : Set) (NI : NameIntf Name) (NSI : NameSetIntf Name) whe
     var : Name → NFC
 
   {-# NON_TERMINATING #-}
-  normalizeC : {xs : List Name} → FVC NFC xs → Maybe NFC
+  normalizeC : ∀[ FVC NFC ⇒ const (Maybe NFC) ]
   normalizeC (app (e₁ ∧ e₂ ∣ φ)) =
     case (normalizeC e₁) of λ where
       (just (lam x e)) → case (normalizeC e₂) of λ where
