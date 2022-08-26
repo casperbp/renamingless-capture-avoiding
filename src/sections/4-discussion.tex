@@ -1,12 +1,11 @@
-\section{Discussion}
+\section{Conclusion and Future Directions}
+\label{sec:conclusion}
 
-Locally nameless
+We have presented a technique for capture avoiding substitution that does not require renaming of bound variables.
+The technique results in substitution functions that perform capture avoiding substitution involving open terms, but which is as simple to implement and understand as substitution functions involving only closed terms.
+This makes this style of substitution attractive for, e.g., teaching and learning the untyped $\lambda$ calculus.
+By intrinsically typing substitution functions we have shown that our technique is indeed capture avoiding.
 
-Deeper head normal forms
-
-
-
-%%% Local Variables:
-%%% mode: latex
-%%% TeX-master: t
-%%% End:
+This paper only considers normalization to weak head normal form, using a \emph{call-by-value} normalization strategy.
+We conjecture that the techniques are equally applicable to \emph{call-by-name normalization} strategies, as well as normalization to stronger normal forms.
+We leave verification of this conjecture as future work.

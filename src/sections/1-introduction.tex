@@ -1,7 +1,7 @@
 \section{Introduction}
 
-As argued by \citet{Accattoli19}, ``the $\lambda$-calculus is as old as computer science''; still, it remains relevant subject of study due to its far-reaching applications in both theory and practice.
-For the same reason, the (untyped) $\lambda$-calculus is commonly taught in computer science education programs around the world.
+As argued by \citet{Accattoli19}, ``the $\lambda$-calculus is as old as computer science''; still, it remains a relevant subject of study thanks to its far-reaching applications in both theory and practice.
+For the same reason, the $\lambda$-calculus remains an important part of computer science curricula around the world.
 
 A key stumbling block of learning and implementing the $\lambda$-calculus, is \emph{capture avoiding substitution}.
 The issue is illustrated by the following term:
@@ -9,20 +9,20 @@ The issue is illustrated by the following term:
   (\lambda f .\, \lambda y .\, (f\ 1) + y)\ (\lambda z .\, \underbrace{y}_{\mathclap{\text{free variable}}})\ 2
   \label{eq0}
 \end{equation}
-This term is \emph{not} normalizable to a number value because the underbraced $y$ is a free variable; i.e., a variable that is not bound by an enclosing $\lambda$ term.
-However, using a na\"{i}ve, non capture avoiding substitution strategy to normalize the term would cause $f$ to be substituted to yield a (wrong) reduct $(\lambda y .\, ((\lambda z .\, {\color{red} y})\ 1) + y)\ 2$ where the {\color{red} red} $y$ is captured, meaning it is no longer a free variable.
+This term is \emph{not} normalizable to a number value because the underbraced $y$ is a \emph{free variable}; i.e., a variable that is not bound by an enclosing $\lambda$ term.
+However, if we use a na\"{i}ve, non capture avoiding substitution strategy to normalize the term would cause $f$ to be substituted to yield a (wrong) intermediate reduct $(\lambda y .\, ((\lambda z .\, {\color{red} y})\ 1) + y)\ 2$ where the {\color{red} red $y$} is captured, meaning it is no longer a free variable.
 
 Following, e.g., \citet{curry1958combinatory}, \citet{Plotkin75}, or \citet{DBLP:books/daglib/0067558}, the common technique to avoid such name capture is to rename variables during substitution.
-Using renaming, normalization of the term in \cref{eq0} instead yields the correct reduct $(\lambda r .\, ((\lambda z .\, y)\ 1) + r)\ 2$.
+Using renaming, normalization of the term in \cref{eq0} yields the correct intermediate reduct $(\lambda r .\, ((\lambda z .\, y)\ 1) + r)\ 2$.
 
-However, defining substitution functions that do this renaming is a delicate and error-prone matter.
-For this reason, and since the need for renaming is only relevant for terms that contain \emph{free variables}, many educational texts and research papers only define substitution for \emph{closed} terms; i.e., terms that do not contain free variables.
+However, defining substitution functions that do such renaming is fiddly.
+For this reason, and since the need for renaming is only relevant for terms that contain free variables, many educational texts and research papers only define substitution for \emph{closed} terms; i.e., terms that do not contain free variables.
 But for some applications, such as implementing dependent type checking~\citep{Pareto1995ALF}, it can be desirable to work on $\lambda$ terms with free variables.
 
-There exists alternative techniques that can be used to define (lazy) capture avoiding substitution, such as \emph{closures and environments}~\citep{Landin64}, \emph{de Bruijn indices}~\citep{de_Bruijn_1972}, and \emph{explicit substitutions}~\citep{AbadiCCL91}.
-But naive and eager substitution functions are usually for teaching the $\lambda$-calculus, because they provide an intuitive framework for understanding the concept that the aforementioned techniques encode.
+There exists alternative techniques that can be used to define (lazy) capture avoiding substitution, such as \emph{closures and environments}~\citep{Landin64}, \emph{de Bruijn indices}~\citep{de_Bruijn_1972}, \emph{explicit substitutions}~\citep{AbadiCCL91}, and \emph{locally nameless}~\cite{Chargueraud12}.
+However, traditional naive substitution functions are often preferable for teaching the $\lambda$-calculus, because they provide an intuitive framework for understanding the concept that the aforementioned alternative techniques encode.
 
-In recent years, Eelco Visser and I have been teaching the $\lambda$-calculus to bachelor students by having them implement definitional interpreters and substitution functions for $\lambda$ terms using a technique for capture avoiding substitution that does not require renaming of bound variables.
+In recent years, Eelco Visser and I have been teaching the $\lambda$-calculus at the undergraduate students by having them implement definitional interpreters and substitution functions for $\lambda$ terms using a technique for capture avoiding substitution that does not require fiddly renaming of bound variables.
 The idea is to distinguish those terms in abstract syntax trees (ASTs) that have already been computed to normal forms, and to never substitute inside of those terms.
 The benefit of this approach is that it makes it as simple to understand and implement substitutions for \emph{open} terms (i.e., terms that may contain free variables) as it is for closed terms.
 
@@ -32,7 +32,7 @@ We make the following technical contributions:
 
 \begin{itemize}
 \item We present a technique (\cref{sec:interpretation}) for capture avoiding substitution that does not require renaming of bound variables, and that is about as simple to understand and implement as substitution for closed terms.
-\item We present an intrinsically capture avoiding definitional interpreter (\cref{sec:normalization}) for the untyped $\lambda$-calculus, which provides proof that the technique is, indeed, capture avoiding.
+\item We present an intrinsically capture avoiding normalizer (\cref{sec:normalization}) for the untyped $\lambda$-calculus, which provides proof that the technique is, indeed, capture avoiding.
 \end{itemize}
 
 

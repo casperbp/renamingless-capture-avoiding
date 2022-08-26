@@ -1,18 +1,19 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[runningheads]{lncs}
 
+\usepackage[T1]{fontenc}
 \usepackage{listings}
 \usepackage{mathpartir}
 \usepackage{xcolor}
 \usepackage{mathtools}
-\usepackage{amsmath,amsthm,stmaryrd}
+\usepackage{stmaryrd}
 \usepackage{wasysym}
 \usepackage{agda}
 \usepackage{src/agdadimmed}
 \usepackage{newunicodechar}
 \usepackage{boxedminipage}
 \usepackage{graphicx}
-\usepackage[sort,comma]{natbib}
-\setcitestyle{authoryear,open={(},close={)}}
+\usepackage{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
 \usepackage[capitalise,noabbrev]{cleveref}
 
 % % adjust outrageous indent on itemized lists
@@ -50,31 +51,36 @@
 \setlength{\parskip}{0em} 
 \setlength\mathindent{0.2cm}
 
+% \newcommand{\citep}[1]{\cite{#1}}
+% \newcommand{\citet}[1]{\citeauthor{#1}~\cite{#1}}
+
 
 %%
 %% Unicode for typesetting Agda code
 \input{src/unicode.tex}
 
 %% Title information
-\title{Definitional Interpreters with\\Renamingless Intrinsically Capture-Avoiding Substitution}
+\title{Renamingless Capture-Avoiding Substitution, Intrinsically}
 
 %% Author with single affiliation.
-\author{Casper Bach Poulsen}
-% \orcid{0000-0003-0622-7639}             %% \orcid is optional
-% \affiliation{
-%   \institution{Delft University of Technology}            %% \institution is required
-%   \country{Netherlands}
-% }
-% \email{c.b.poulsen@tudelft.nl}          %% \email is recommended
-
-\date{}
+\author{Casper Bach Poulsen}%\orcidID{0000-0003-0622-7639}}
+%
+\authorrunning{C. Bach Poulsen}
+% First names are abbreviated in the running head.
+% If there are more than two authors, 'et al.' is used.
+%
+\institute{Delft University of Technology, Netherlands\\
+\email{c.b.poulsen@tudelft.nl}}
+%\author{Casper Bach Poulsen}{Delft University of Technology, Netherlands}{c.b.poulsen@tudelft.nl}{https://orcid.org/0000-0003-0622-7639}
 
 \begin{document}
 
 \maketitle
 
 \begin{abstract}
-  Lorem ipsum
+  We describe a simple and direct technique for capture avoiding substitution of untyped $\lambda$ terms that avoids the need to rename bound variables during substitution.
+  We demonstrate how this substitution technique yields correct normalization of open $\lambda$ terms to weak head normal form.
+  We also describe an intrinsic typing discipline for untyped $\lambda$ terms which we use to verify that our substitution technique is, indeed, capture avoiding.
 \end{abstract}
 
 \input{src/sections/1-introduction.tex}
@@ -85,7 +91,8 @@
 
 %% Bibliography
 \bibliography{src/references}
-\bibliographystyle{abbrvnat}
+\bibliographystyle{splncs04nat}
+
 
 
 %% Appendix
