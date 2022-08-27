@@ -123,7 +123,7 @@ module NormalizerV  (Name : Set)
 \end{code}
 
 The idea is to enrich our notion of term to distinguish those terms that have been computed to normal forms (values).
-The motivation for distinguishing values, is that values represent terms where all substitutions from their the lexically enclosing context have already been applied.
+The motivation for distinguishing values, is that values represent terms where all substitutions from their lexically enclosing context have already been applied.
 It is futile (and morally wrong) to propagate substitutions into values.
 The reason that traditional expositions of the untyped $\lambda$ calculus rely on renaming of bound variables, is that they propagate substitutions into values.
 By distinguishing values, we avoid this pitfall, and thus the need for renaming.
