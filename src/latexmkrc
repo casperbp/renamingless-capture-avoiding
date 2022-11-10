@@ -4,7 +4,7 @@ $tex_src .= "\\input{%S}";
 
 $bibtex_use = 2;
 
-$ENV{'BIBINPUTS'}='../tex';
+$ENV{'BIBINPUTS'}='../src';
 
 $pdf_mode = 1;
 $pdflatex = "texfot xelatex %O -interaction=nonstopmode -synctex=1 -shell-escape \"$tex_src\"";

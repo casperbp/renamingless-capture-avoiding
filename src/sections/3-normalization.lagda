@@ -15,22 +15,26 @@ open import Algebra.Definitions
 open import sections.2-interpretation
 \end{code}
 
-\section{Renamingless Capture Avoiding Substitution using Intrinsic Typing}
+\section{Intrinsically Scoped Renamingless Capture Avoiding Substitution}
 \label{sec:normalization}
 
-We show that both of the substitution functions from \cref{sec:interpretation} are capture avoiding because they only ever substitute closed terms under $\lambda$ binders.
-We do so by strengthening the type of our substitution functions and normalizers to reflect the invariants that they are subject to, using \emph{intrinsic typing}~\citep{AltenkirchR99,Augustsson99anexercise}.
-Our approach to intrinsic typing is inspired by the Agda standard library\footnote{E.g., \url{https://github.com/agda/agda-stdlib/blob/v1.7.1/src/Relation/Unary.agda}} and the work of~\citet{RouvoetPKV20}.
+We introduce an intrinsic scoping discipline for the untyped $\lambda$ calculus, inspired by \emph{intrinsic typing}~\cite{AltenkirchR99,Augustsson99anexercise}.
+This intrinsic scoping discipline explains how our renamingless capture avoiding substitution strategy and the normalizers that use it rely on a loose notion of what it means for a term to be closed; namely, closed terms may contain free (but unsubstitutable) variables.
+
+Our approach to intrinsic scoping is inspired by the Agda standard library\footnote{E.g., \url{https://github.com/agda/agda-stdlib/blob/v1.7.1/src/Relation/Unary.agda}} and the work of, e.g., Allais~et~al.~\cite{DBLP:journals/jfp/AllaisACMM21} and Rouvoet~et~al.~\cite{RouvoetPKV20}.
 
 \subsection{Prelude to Intrinsic Typing}
 
-We will be intrinsically typing untyped $\lambda$ terms by their set of free variables.
-For example, $\lambda x .\, y$ where $x \neq y$ will be typed as a term whose free variable set is $\{ y \}$.
-On other words, terms will be given by \emph{predicates over free variables}.
-\Cref{fig:connectives} introduces some logical connectives for such predicates.
-We will make use of these connectives to write concise type signatures and normalizers, akin to the ones in the previous section, but which Agda can check are safe-by-construction.
-For example, in \cref{sec:interpreting-closed-intrinsic} we use the connectives to assert and verify that the closed substitution function from \cref{sec:interpreting-closed} only substitutes for closed terms, that substitution eliminates a free variable, and that normalization of closed terms only applies closed substitutions to compute closed $\lambda$ terms as a result.
-In \cref{sec:interpreting-open-intrinsic} we apply the same approach to the substitution function and normalizer from \cref{sec:interpreting-open}.
+We will associate untyped $\lambda$ terms with their set of free variables.
+For example, $\lambda x .\, y$ where $x \neq y$ is encoded as a term associated with the free variable set is $\{ y \}$.
+We will encode a syntax that intrinsically associates a term with its set of free variables by making it impossible to define terms with any other association.
+
+To this end, we will encode terms as \emph{predicates over free variables}; i.e., the \ad{FVPred} type in \cref{fig:connectives} which uses a list of names to represent a (multi-)set of free variables.
+\Cref{fig:connectives} also introduces the logical connectives we will use to write concise type signatures and normalizers, akin to the ones in the previous section, but which Agda can check are safe-by-construction.
+We recommend that readers read \cref{sec:interpreting-closed-intrinsic} and consult \cref{fig:connectives} as needed.
+
+% For example, in \cref{sec:interpreting-closed-intrinsic} we use the connectives to assert and verify that the closed substitution function from \cref{sec:interpreting-closed} only substitutes for closed terms, that substitution eliminates a free variable, and that normalization of closed terms only applies closed substitutions to compute closed $\lambda$ terms as a result.
+% In \cref{sec:interpreting-open-intrinsic} we apply the same approach to the substitution function and normalizer from \cref{sec:interpreting-open}.
 
 The logical connectives in \cref{fig:connectives} assume the existence of a union-like operation for lists of names
 %
@@ -87,7 +91,8 @@ It also assumes a difference-like operation
   
   ε[_] : FVPred → Set
   ε[ P ] = P []
-
+\end{code}
+\begin{code}[hide]
   One : Name → List Name → Set
   One x xs = xs ≡ [ x ]
 \end{code}
@@ -103,8 +108,6 @@ It also assumes a difference-like operation
            px : P ys
            qx : Q zs
            φ  : xs ≡ ys ⊔ zs
-
-
 
 
   _─_ : FVPred → Name → FVPred
@@ -208,8 +211,8 @@ The type and implementation of the function is given below, where each \af{⋯} 
 \end{AgdaSuppressSpace}
 \end{AgdaAlign}
 %
-The type signature of the substitution function above says that the term being substituted for has no free variables (\af{ε[~FV~]}), and that the final set of free variables is the set of free variables of the term being substituted in minus the variable $x$ that was substituted (\af{∀[~FV~⇒~}\as{(}\af{FV}~─~\ab{x}\as{)}~\af{]}).
-Agda automatically checks for us that the substitution function inhabits this type, thereby showing that the substitution function is capture avoiding by construction.
+The type signature of the substitution function above says that the term being substituted for has no free variables (\af{ε[~FV~]}), and that the final set of free variables is the set of free variables of the term being substituted in minus the variable $x$ that was substituted (\af{∀[~FV~⇒~}\as{(}\af{FV}~─~\ab{x}\as{)}~\af{]}); i.e., no variables are captured.
+%%The the substitution function inhabits this type, thereby showing that the substitution function is capture avoiding by construction.
 
 The normalizer from \cref{sec:interpreting-closed} can be similarly generalized to show that normalizing a closed term is guaranteed to yield a normal form (value), where a normal form is a (closed) $\lambda$ value given by the \ad{NF} type:
 \begin{code}
@@ -261,7 +264,9 @@ To this end we enrich the \ad{FV} type from before by an additional constructor 
     val  : ε[ const V                   ⇒ FVV V ]
 \end{code}
 %
-The \ac{val} case says that values have \emph{no free variables}.
+Crucially, the \ac{val} case says that values have \emph{no free variables}.
+However, below we will use a notion of value that may contain free variables.
+But since these free variables are delimited by a value, they are \emph{unsubstitutable}.
 
 Using this type of terms, we define a substitution function with a similar type signature as the substitution function from \cref{sec:interpreting-closed-intrinsic}.
 It also has similar cases which we elide, except for the case for the \ac{val} constructor:\footnote{The \as{\_} in \af{FVV}~\as{\_} represents a term that we ask Agda to automatically infer for us.  In this case, Agda infers that it is the implicitly parameter type \ab{V}~\as{:}~\ad{Set}.}
@@ -269,13 +274,22 @@ It also has similar cases which we elide, except for the case for the \ac{val} c
 \begin{AgdaAlign}
 \begin{AgdaSuppressSpace}
 \begin{code}
-  ⦉_/_⦊_  : {V : Set}
-          → ε[ FVV V ] → (x : Name) → ∀[ FVV V ⇒ (FVV V ─ x) ]
+  ⦉_/_⦊_  : {V : Set} → V → (x : Name) → ∀[ FVV V ⇒ (FVV V ─ x) ]
 \end{code}
 \begin{code}[hide]
-  ⦉ s / y ⦊ (app (t₁ ∧ t₂ ∣ φ)) =
-    app ( (⦉ s / y ⦊ t₁)
-        ∧ (⦉ s / y ⦊ t₂)
+  a : {A : Set} → Maybe A
+  a =
+\end{code}
+\begin{code}
+    ⋯
+\end{code}
+\begin{code}[hide]
+    nothing
+\end{code}
+\begin{code}[hide]
+  ⦉ v / y ⦊ (app (t₁ ∧ t₂ ∣ φ)) =
+    app ( (⦉ v / y ⦊ t₁)
+        ∧ (⦉ v / y ⦊ t₂)
         ∣ (begin
               _
             ≡⟨ cong (_∖ _) φ ⟩
@@ -283,7 +297,7 @@ It also has similar cases which we elide, except for the case for the \ac{val} c
             ≡⟨ ∖-distrʳ _ _ _ ⟩
               _
             ∎) )
-  ⦉ s / y ⦊ (lam x t) = case (x ≡? y) of λ where
+  ⦉ v / y ⦊ (lam x t) = case (x ≡? y) of λ where
     (yes φ) → lam x (t ∶ FVV _ ∣ (begin
                                     _
                                   ≡˘⟨ ∖-idemʳ _ _ ⟩
@@ -291,17 +305,17 @@ It also has similar cases which we elide, except for the case for the \ac{val} c
                                   ≡˘⟨ cong (λ ■ → ((_ ∖ [ ■ ]) ∖ _)) (sym φ) ⟩
                                     _
                                   ∎))
-    (no ¬φ) → lam x ((⦉ s / y ⦊ t) ∶ FVV _ ∣ (∖-swapʳ _ _ _))
-  ⦉ s / y ⦊ (var x φ₁) = case (x ≡? y) of λ where
-    (yes φ₂) → s ∶ FVV _ ∣ (begin
-                                 []
-                               ≡˘⟨ ∖-subtractive _ ⟩
-                                 _
-                               ≡˘⟨ cong (_∖ _) φ₁ ⟩
-                                 _
-                               ≡⟨ cong (λ ■ → _ ∖ [ ■ ]) φ₂ ⟩
-                                 _
-                               ∎)
+    (no ¬φ) → lam x ((⦉ v / y ⦊ t) ∶ FVV _ ∣ (∖-swapʳ _ _ _))
+  ⦉ v / y ⦊ (var x φ₁) = case (x ≡? y) of λ where
+    (yes φ₂) → val v ∶ FVV _ ∣ (begin
+                                  []
+                                ≡˘⟨ ∖-subtractive _ ⟩
+                                  _
+                                ≡˘⟨ cong (_∖ _) φ₁ ⟩
+                                  _
+                                ≡⟨ cong (λ ■ → _ ∖ [ ■ ]) φ₂ ⟩
+                                  _
+                                ∎)
     (no ¬φ₂) → var x (begin
                          _
                       ≡⟨ cong (_∖ _) φ₁ ⟩
@@ -311,7 +325,7 @@ It also has similar cases which we elide, except for the case for the \ac{val} c
                       ∎)
 \end{code}
 \begin{code}
-  ⦉ s / y ⦊ (val v) = val v ∶ FVV _ ∣ ⋯
+  ⦉ v / y ⦊ (val u) = val u ∶ FVV _ ∣ ⋯
 \end{code}
 \begin{code}[hide]
                                      (sym (∖-zeroˡ _))
@@ -323,7 +337,7 @@ As with the substitution function from \cref{sec:interpreting-closed}, we do not
 Thus the only difference between the substitution function in \cref{sec:interpreting-closed-intrinsic} and the substitution function above is that the function above has a more liberal notion of what it means for a term to be closed; namely, it is either a plain closed term, or a value.
 
 Using this substitution function we generalize the type of the normalizer from \cref{sec:interpreting-open} to operate on intrinsically typed terms.
-Unlike the normalizer in \cref{sec:interpreting-closed-intrinsic}, the normalizer below takes \emph{open terms} as input and normalizes these to weak head normal forms given by the following type:
+Unlike the normalizer in \cref{sec:interpreting-closed-intrinsic}, the normalizer below takes \emph{open terms} as input and normalizes these to weak head normal forms:
 \begin{code}
   data ValV : Set where
     lam : (x : Name) → ∀[ (FVV ValV ─ x)  ⇒ const ValV ]
@@ -337,7 +351,7 @@ The normalizer is given by the \af{normalizeV} function:
   {-# NON_TERMINATING #-}
   normalizeV : ∀[ FVV ValV ⇒ const ValV ]
   normalizeV (app (t₁ ∧ t₂ ∣ φ)) = case (normalizeV t₁) of λ where
-    (lam x t)  → normalizeV $ (⦉ val (normalizeV t₂) / x ⦊ t) ∶ FVV _ ∣ ⋯
+    (lam x t)  → normalizeV $ (⦉ (normalizeV t₂) / x ⦊ t) ∶ FVV _ ∣ ⋯
 \end{code}
 \begin{code}[hide]
                                                             (∖-idemʳ _ _)

@@ -1,37 +1,24 @@
 SRC := src
 SCT := $(SRC)/sections
 
-PDFLATEX = lualatex -output-directory build/ -interaction=nonstopmode -file-line-error
-LATEXMK  = latexmk -r $(SRC)/latexmkrc
+PDFLATEX = pdflatex
 
 SOURCES := $(patsubst %.lagda,%.tex,$(wildcard $(SCT)/*.lagda $(SCT)/*.tex))
 
 all: document.pdf 
 
-document.pdf: build build/document.tex $(SOURCES)
-	$(PDFLATEX) build/document.tex
-	bibtex build/document
-	$(PDFLATEX) build/document.tex
-	$(PDFLATEX) build/document.tex
-	cp build/document.pdf document.pdf
-
-# Quick 'n dirty build, intended for use with watch script
-quick: build build/document.tex $(SOURCES)
-	$(PDFLATEX) build/document.tex
-	cp build/document.pdf document.pdf
+document.pdf: $(SRC)/document.tex $(SOURCES)
+	cd $(SRC) &&\
+	$(PDFLATEX) document.tex &&\
+	bibtex document &&\
+	$(PDFLATEX) document.tex &&\
+	$(PDFLATEX) document.tex &&\
+	cp document.pdf ../document.pdf
 
 build/document.tex: $(SRC)/document.tex
 	cp $(SRC)/document.tex build/document.tex
 
 %.tex: %.lagda
-	agda --latex --latex-dir=src $<
+	agda --latex --latex-dir=$(SRC) $<
 
-build:
-	mkdir $@
-
-clean:
-	$(LATEXMK) -C .
-	rm -f document.pdf
-	rm -rf build
-	rm -r $(SCT)/*.tex
-.PHONY: all clean
+.PHONY: all
