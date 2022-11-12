@@ -140,7 +140,6 @@ The \ad{TermV} data type below is the same as \ad{Term} but has a distinguished 
 \end{code}
 %
 We can define a substitution function for \ad{TermV} that is case-by-case the same as the substitution function in \cref{sec:interpreting-closed}, except that (1) it substitutes \emph{values} (\ab{V}) into terms, and (2) it has a case for value terms (\ac{val}):\footnote{The curly braces \as{\{}$\ldots$\as{\}} in the type signature of \af{⟨\_/\_⟩\_} denotes an \emph{implicit parameter} which does not need to be passed explicitly when we call the function.  Agda will automatically infer what the parameter is.}
-In other words, values are \emph{closed}.
 %
 \begin{code}
   ⟨_/_⟩_ : {V : Set} → V → Name → TermV V → TermV V
@@ -156,6 +155,7 @@ In other words, values are \emph{closed}.
 %
 The final case above says that we never substitute inside values.
 This way, free variables that occur in values are never captured because we never propagate substitutions into values.
+In other words, values are \emph{closed}.
 
 As opposed to the substitution function in \cref{sec:interpreting-closed}, the function above accepts values rather than terms as its first argument.
 However, this suffices to define a normalizer to values in weak head normal form.
