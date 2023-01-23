@@ -25,15 +25,13 @@ Another trade-off is that renaming gives rise to intermediate terms whose names 
 For applications where intermediate terms are user facing (e.g., in error messages, or in systems based on rewriting) this can be confusing.
 For this reason, definitional interpreters often use alternative techniques for (lazy) capture avoiding substitution, such as \emph{closures}~\cite{Landin64}, \emph{de Bruijn indices}~\cite{de_Bruijn_1972}, \emph{explicit substitutions}~\cite{AbadiCCL91}, or \emph{locally nameless}~\cite{Chargueraud12}.
 However, traditional named variable substitution is sometimes preferred because intermediate terms are easy to inspect and compare.
+
 This paper considers and explores named substitution strategies that do not rely on renaming variables.
 We explore two possible solutions to this problem, neither of which seem to be widely known or at least not widely used.
+The purpose of this paper is to increase awareness of these techniques.
 % They may also be preferable for teaching the $\lambda$-calculus because the aforementioned techniques are essentially clever encodings of naive substitution.
-
-
 %Name capture is only a problem  perform evaluation involving free variables.
 % While many modern programming languages disallow terms with free variables, there are use cases where free variables are useful, such as dependent type checkers~\cite{Huet1975aunification,Pareto1995ALF}, systems based on rewriting (such as mCRL2~\cite{DBLP:books/mit/GrooteM2014}), and definitional interpreters used for teaching.
-
-
 The first technique we explore is a technique that Eelco Visser and I were using to teach students about static scoping, by having students implement definitional interpreters.
 To this end, we used a simple renamingless substitution strategy which (for applications that do not perform evaluation under binders) is capture avoiding.
 The idea is to delimit and never substitute into those terms in abstract syntax trees (ASTs) where all substitutions that were supposed to be applied to the term, have been applied; e.g., terms that have been computed to normal form.

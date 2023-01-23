@@ -104,7 +104,7 @@
   The traditional approach to avoiding variable capture is to rename variables.
   However, traditional renaming makes for an inefficient interpretation strategy.
   Furthermore, for applications where partially-interpreted terms are user facing it can be confusing if names in uninterpreted parts of the program have been changed.
-  In this paper we explore two techniques for implementing capture avoiding substitution in definitional interpreters in a way that avoids renaming.
+  In this paper we explore two techniques for implementing capture avoiding substitution in definitional interpreters to avoid renaming.
 \end{abstract}
 
 
