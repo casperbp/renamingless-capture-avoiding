@@ -1,12 +1,38 @@
-\section{Conclusion and Future Directions}
+\section{Related Work}
+\label{sec:related}
+
+In this paper we explored two techniques for capture avoiding substitution that avoids renaming, for the purpose of implementing static name binding in languages with $\lambda$s.
+The topic of evaluating $\lambda$ expressions has a long and rich history.
+Summarizing it all is beyond the scope of this paper; for overviews see, e.g., the works of Barendregt~\cite{DBLP:journals/bsl/Barendregt97} or Cardone~and~Hindley~\cite{hindley-lambda-history}.
+We discuss a few of the papers that are most closely related to the techniques we have described.
+
+In their formalization of $\lambda$ calculus and type theory, McKinna~and~Pollack~\cite{DBLP:journals/jar/McKinnaP99} consider a system that uses named substitution without renaming, for a particular notion of open terms.
+They consider a syntax that distinguishes two classes of names: \emph{parameters} and \emph{variables}.
+\emph{Variable substitution} does not affect parameters, and \emph{parameter substitution} does not affect variables.
+Their notion of variable substitution is defined for terms that are \emph{variable-closed}, but which may be \emph{parameter-open}.
+Thus, by encoding free variables as parameters, their system can be used to compute with open terms.
+However, syntactically distinguishing free variables this way seems to presupposes a static binding analysis.
+The approach we discussed in \cref{sec:interpreting-open} does not presuppose such static analysis.
+
+Our paper considers how to interpret open terms.
+There exist several calculi in the literature for evaluating open terms.
+Accatolli~and~Guerrieri~\cite{DBLP:conf/aplas/AccattoliG16} gives an overview of several of these calculi for \emph{open call-by-value}, which is the class of languages that the interpreters in \cref{sec:interpretation}~and\cref{sec:shifting} interpret.
+In their paper, Accatolli~and~Guerrieri focus on the meta-theory of these calculi.
+For their meta-theoretical study they rely on an unspecified notion of capture-avoiding substitution.
+In this paper, we explore how to define such capture-avoiding substitution in a way that does not perform renaming.
+While the meta-theory of Berkling-Fehr substitution has been studied~\cite{berkling1982amodification}, the meta-theory of the substitution strategy in~\cref{sec:interpreting-open} remains an open question.
+
+\section{Conclusion}
 \label{sec:conclusion}
 
-We have presented a technique for capture avoiding substitution that does not require renaming of bound variables.
-The technique results in substitution functions that perform capture avoiding substitution involving open terms, but which is as simple to implement and understand as substitution functions involving only closed terms.
-This makes this style of substitution attractive for, e.g., teaching and learning the untyped $\lambda$ calculus.
-By intrinsically typing substitution functions we have shown that our technique is indeed capture avoiding.
+We have discussed two techniques for implementing capture avoiding substitution in definitional interpreters in a way that does not require renaming of bound variables.
+One of the techniques relies on a coarse-grained but simple discipline for closing terms, is known to not support interpretation strategies that evaluate under binders, and has (to the best of our knowledge) not been studied meta-theoretically.
+The other technique is an existing technique from the literature.
+While this technique is less efficient, it is more fine-grained and so does is not subject to the same limitations as the first technique.
+It also has a well-established meta-theory. 
+Neither of the two techniques seem to be widely known or at least not widely applied.
+With this work, we hope to increase awareness of these techniques.
 
-This paper only considers normalization to weak head normal form, using a \emph{call-by-value} normalization strategy.
-We conjecture that the techniques are equally applicable to \emph{call-by-name normalization} strategies, as well as normalization to stronger normal forms.
-We leave verification of this conjecture as future work.
-
+%%% Local Variables:
+%%% reftex-default-bibliography: ("../references.bib")
+%%% End:

@@ -13,9 +13,6 @@
 \usepackage{mathtools}
 \usepackage{stmaryrd}
 \usepackage{wasysym}
-\usepackage{agda}
-\usepackage{agdadimmed}
-\usepackage{newunicodechar}
 
 %\pdfoutput=1 %uncomment to ensure pdflatex processing (mandatatory e.g. to submit to arXiv)
 %\hideOASIcs %uncomment to remove references to OASIcs series (logo, DOI, ...), e.g. when preparing a pre-final version to be uploaded to arXiv or another public repository
@@ -24,7 +21,7 @@
 
 \makeatletter
 \newcommand{\crefnames}[3]{%
-  \@for\next:=#1\do{%
+  \@@for\next:=#1\do{%
     \expandafter\crefname\expandafter{\next}{#2}{#3}%
   }%
 }
@@ -32,40 +29,14 @@
 
 \crefnames{section}{\S}{\S\S}
 
-%%
-%% Agda typesetting commands shorthands, for
-%% manual typesetting of inline code
-%%
-
-\newcommand{\af}{\AgdaFunction}
-\newcommand{\un}{\AgdaUnderscore}
-\newcommand{\ad}{\AgdaDatatype}
-\newcommand{\ab}{\AgdaBound}
-\newcommand{\ac}{\AgdaInductiveConstructor}
-\newcommand{\aF}{\AgdaField}
-\newcommand{\as}{\AgdaSymbol}
-\newcommand{\ak}{\AgdaKeyword}
-\newcommand{\ap}{\AgdaPrimitiveType}
-\newcommand{\an}{\AgdaNumber}
-\newcommand{\aC}{\AgdaComment}
-\newcommand{\am}{\AgdaModule}
-
 \setlength{\parskip}{0em} 
 \setlength\mathindent{0.2cm}
 
-% \newcommand{\citep}[1]{\cite{#1}}
-% \newcommand{\citet}[1]{\citeauthor{#1}~\cite{#1}}
-
-
-%%
-%% Unicode for typesetting Agda code
-\input{unicode.tex}
-
 %% Title information
-\title{Renamingless Capture-Avoiding Substitution, Intrinsically Scoped}
+\title{Renamingless Capture-Avoiding Substitution for Definitional Interpreters}
 
 %% Author with single affiliation.
-\author{Casper {Bach Poulsen}}{Delft University of Technology, Netherlands \and \url{http://www.casperbp.net} }{c.b.poulsen@tudelft.nl}{https://orcid.org/0000-0003-0622-7639}{}%TODO mandatory, please use full name; only 1 author per \author macro; first two parameters are mandatory, other parameters can be empty. Please provide at least the name of the affiliation and the country. The full address is optional. Use additional curly braces to indicate the correct name splitting when the last name consists of multiple name parts.
+\author{Casper {Bach Poulsen}}{Delft University of Technology, Netherlands \and \url{http://www.casperbp.net} }{c.b.poulsen@@tudelft.nl}{https://orcid.org/0000-0003-0622-7639}{}%TODO mandatory, please use full name; only 1 author per \author macro; first two parameters are mandatory, other parameters can be empty. Please provide at least the name of the affiliation and the country. The full address is optional. Use additional curly braces to indicate the correct name splitting when the last name consists of multiple name parts.
 %
 \authorrunning{C. Bach Poulsen}
 % First names are abbreviated in the running head.
@@ -73,25 +44,25 @@
 
 \Copyright{Jane Open Access and Joan R. Public} %TODO mandatory, please use full first names. LIPIcs license is "CC-BY";  http://creativecommons.org/licenses/by/3.0/
 
-\begin{CCSXML}
-<ccs2012>
-   <concept>
-       <concept_id>10011007.10011006.10011039.10011311</concept_id>
-       <concept_desc>Software and its engineering~Semantics</concept_desc>
-       <concept_significance>500</concept_significance>
-       </concept>
-   <concept>
-       <concept_id>10003752.10003790.10002990</concept_id>
-       <concept_desc>Theory of computation~Logic and verification</concept_desc>
-       <concept_significance>300</concept_significance>
-       </concept>
- </ccs2012>
-\end{CCSXML}
-
+% \begin{CCSXML}
+% <ccs2012>
+%    <concept>
+%        <concept_id>10011007.10011006.10011039.10011311</concept_id>
+%        <concept_desc>Software and its engineering~Semantics</concept_desc>
+%        <concept_significance>500</concept_significance>
+%        </concept>
+%    <concept>
+%        <concept_id>10003752.10003790.10002990</concept_id>
+%        <concept_desc>Theory of computation~Logic and verification</concept_desc>
+%        <concept_significance>300</concept_significance>
+%        </concept>
+%  </ccs2012>
+% \end{CCSXML}
+ 
 \ccsdesc[500]{Software and its engineering~Semantics}
 \ccsdesc[300]{Theory of computation~Logic and verification}
 
-\keywords{Capture-avoiding substitution, Untyped lambda calculus, Agda, Dependent types} %TODO mandatory; please add comma-separated list of keywords
+\keywords{Capture-avoiding substitution, Untyped lambda calculus, Definitional interpreter} %TODO mandatory; please add comma-separated list of keywords
 
 %\category{} %optional, e.g. invited paper
 
@@ -121,21 +92,31 @@
 \ArticleNo{23}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%include polycode.fmt
+
 \begin{document}
 
 \maketitle
 
 \begin{abstract}
-  We describe a simple and direct technique for capture avoiding substitution of untyped $\lambda$ terms that avoids the need to rename bound variables during substitution.
-  We demonstrate how this substitution technique yields correct normalization of open $\lambda$ terms to weak head normal form.
-  We also give an intrinsically scoped syntax for untyped $\lambda$ terms.
-  Using this syntax we show that the substitution technique is, indeed, capture avoiding.
+  Substitution is a common and popular approach to implementing name binding in definitional interpreters.
+  A common pitfall of implementing substitution functions is \emph{variable capture}.
+  The traditional approach to avoiding variable capture is to rename variables.
+  However, traditional renaming makes for an inefficient interpretation strategy.
+  Furthermore, for applications where partially-interpreted terms are user facing it can be confusing if names in uninterpreted parts of the program have been changed.
+  In this paper we explore two techniques for implementing capture avoiding substitution in definitional interpreters in a way that avoids renaming.
 \end{abstract}
 
+
 \input{sections/1-introduction.tex}
-\input{sections/2-interpretation.tex}
-\input{sections/3-normalization.tex}
+%include sections/2-interpretation.lhs
+%include sections/3-shifting.lhs
 \input{sections/4-discussion.tex}
+
+% \input{sections/1-introduction.tex}
+% \input{sections/2-interpretation.tex}
+% \input{sections/3-normalization.tex}
+% \input{sections/4-discussion.tex}
 
 
 %% Bibliography

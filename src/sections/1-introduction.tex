@@ -4,33 +4,41 @@
 % Still it remains a relevant subject of study thanks to its far-reaching applications in both theory and practice.
 % For the same reason, the $\lambda$-calculus remains an important part of computer science curricula around the world.
 
-A key stumbling block when learning or implementing an interpreter for the $\lambda$-calculus, is \emph{capture avoiding substitution}.
-The issue is illustrated by the following term:
+Following Reynolds~\cite{reynolds98definitional}, a definitional interpreter is an important and frequently used method of defining a programming language, by giving an interpreter for the language that is written in a second, hopefully better understood language.
+The method is widely used both for programming language research~\cite{AminR17,bach2017intrinsically,Danielsson12-0,Owens2016functionalbigstep,RouvoetPKV20} and teaching~\cite{krishnamurthi2022plai,pierce2002types,siek2022essentials}.
+A commonly used approach to defining name binding in such interpreters is \emph{substitution}.
+A key stumbling block when implementing substitution is how to deal with \emph{name capture}.
+The issue is illustrated by the following untyped $\lambda$ term:
 \begin{equation}
   (\lambda f .\, \lambda y .\, (f\ 1) + y)\ (\lambda z .\, \underbrace{y}_{\mathclap{\text{free variable}}})\ 2
   \label{eq0}
 \end{equation}
-This term is \emph{not} normalizable to a number value because $y$ is a \emph{free variable}; i.e., it is not bound by an enclosing $\lambda$ term.
-However, using a na\"{i}ve, non capture avoiding substitution strategy to normalize the term would cause $f$ to be substituted to yield a (wrong) intermediate reduct $(\lambda y .\, ((\lambda z .\, {\color{red} y})\ 1) + y)\ 2$ where the {\color{red} red $y$} is \emph{captured}; that is, it is no longer a free variable.
+This term does \emph{not} evaluate to a number value because $y$ is a \emph{free variable}; i.e., it is not bound by an enclosing $\lambda$ term.
+However, using a na\"{i}ve, non capture avoiding substitution strategy to normalize the term would cause $f$ to be substituted to yield an interpreter state corresponding to the following (wrong) intermediate term $(\lambda y .\, ((\lambda z .\, {\color{red} y})\ 1) + y)\ 2$ where the {\color{red} red $y$} is \emph{captured}; that is, it is no longer a free variable.
 
-Following, e.g., Curry~and~Feys~\cite{curry1958combinatory}, Plotkin~\cite{Plotkin75}, or Barendregt~\cite{DBLP:books/daglib/0067558}, the common technique to avoid such name capture is to rename variables during substitution.
+Following, e.g., Curry~and~Feys~\cite{curry1958combinatory}, Plotkin~\cite{Plotkin75}, or Barendregt~\cite{DBLP:books/daglib/0067558}, the common technique to avoid such name capture is to \emph{rename} variables either before or during substitution (a process known as \emph{$\alpha$-conversion}~\cite{church-unsolvableproblemof-1936}).
 For example, by renaming the $\lambda$ bound variable $y$ to $r$, we can correctly reduce term (\ref{eq0}) to $(\lambda r .\, ((\lambda z .\, y)\ 1) + r)\ 2$.
-However, this renaming based substitution strategy is problematic for two reasons.
-The first reason is that renaming variables give rise to intermediate reducts whose names differ from the surface program.
-For applications where intermediate reducts are user facing (e.g., in error messages, or in systems based on rewriting) this gives rise to confusion.
-The second problem is that implementing substitution functions that do such renaming is fiddly.
-For these reasons, and since the need for renaming is only relevant for terms that contain free variables, many educational texts and research papers only define substitution for \emph{closed} terms; i.e., terms that do not contain free variables.
-However, for some applications it is useful to reduce $\lambda$ terms with free variables; for example, when implementing dependent type checkers~\cite{Pareto1995ALF}, or specifying models using the mCRL2 specification language~\cite{DBLP:books/mit/GrooteM2014}.
 
-There exist alternative techniques that can be used to define (lazy) capture avoiding substitution, such as \emph{closures}~\cite{Landin64}, \emph{de Bruijn indices}~\cite{de_Bruijn_1972}, \emph{explicit substitutions}~\cite{AbadiCCL91}, and \emph{locally nameless}~\cite{Chargueraud12}.
-However, traditional naive substitution is sometimes preferred because intermediate reducts are easy to inspect and compare.
+While a renaming based substitution strategy provides a well behaved and versatile approach to avoiding name capture, it has some trade-offs.
+For example, since renaming typically works by fully traversing terms, definitional interpreters that use renaming based substitution are typically relatively slow.
+Another trade-off is that renaming gives rise to intermediate terms whose names differ from the names in source programs.
+For applications where intermediate terms are user facing (e.g., in error messages, or in systems based on rewriting) this can be confusing.
+For this reason, definitional interpreters often use alternative techniques for (lazy) capture avoiding substitution, such as \emph{closures}~\cite{Landin64}, \emph{de Bruijn indices}~\cite{de_Bruijn_1972}, \emph{explicit substitutions}~\cite{AbadiCCL91}, or \emph{locally nameless}~\cite{Chargueraud12}.
+However, traditional named variable substitution is sometimes preferred because intermediate terms are easy to inspect and compare.
+This paper considers and explores named substitution strategies that do not rely on renaming variables.
+We explore two possible solutions to this problem, neither of which seem to be widely known or at least not widely used.
 % They may also be preferable for teaching the $\lambda$-calculus because the aforementioned techniques are essentially clever encodings of naive substitution.
 
-In recent years, Eelco Visser and I were teaching the $\lambda$-calculus to undergraduate students by having them implement definitional interpreters and substitution functions.
-To this end, we used a technique for substitution in $\lambda$ terms that is capture avoiding but does not require renaming of bound variables during substitution.
-The idea is to delimit and distinguish those terms in abstract syntax trees (ASTs) that have already been computed to normal forms, and to never substitute inside those.
+
+%Name capture is only a problem  perform evaluation involving free variables.
+% While many modern programming languages disallow terms with free variables, there are use cases where free variables are useful, such as dependent type checkers~\cite{Huet1975aunification,Pareto1995ALF}, systems based on rewriting (such as mCRL2~\cite{DBLP:books/mit/GrooteM2014}), and definitional interpreters used for teaching.
+
+
+The first technique we explore is a technique that Eelco Visser and I were using to teach students about static scoping, by having students implement definitional interpreters.
+To this end, we used a simple renamingless substitution strategy which (for applications that do not perform evaluation under binders) is capture avoiding.
+The idea is to delimit and never substitute into those terms in abstract syntax trees (ASTs) where all substitutions that were supposed to be applied to the term, have been applied; e.g., terms that have been computed to normal form.
 For example, using $\lfloor$ and $\rfloor$ for this delimiter, an intermediate reduct of the term labeled (\ref{eq0}) above is $(\lambda y.\, (\colorbox{gray!30}{$\lfloor (\lambda z.\, y) \rfloor$}\ 1) + y)\ 2$.
-Here the delimited \colorbox{gray!30}{highlighted} term is closed under substitution, such that the substitution of $y$ for $2$ is not propagated past the delimiter; i.e., using $\leadsto$ to denote reduction:
+Here the delimited \colorbox{gray!30}{highlighted} term is closed under substitution, such that the substitution of $y$ for $2$ is not propagated past the delimiter; i.e., using $\leadsto$ to denote step-wise evaluation:
 \begin{align*}
   & (\lambda f .\, \lambda y .\, (f\ 1) + y)\ (\lambda z .\, y)\ 2
   \\
@@ -43,19 +51,59 @@ Here the delimited \colorbox{gray!30}{highlighted} term is closed under substitu
   \leadsto\quad & y + 2
 \end{align*}
 %
-These reductions are equivalent to using a renaming based substitution function.
-However, our renamingless substitution strategy does not rename variables, and (as we demonstrate in \cref{sec:interpreting-open}) is about as simple to define and implement as a substitution for closed terms.
+The result term computed by these reduction steps is equivalent to using a renaming based substitution function.
+However, the renamingless substitution strategy we used does not rename variables (and so preserves the names of bound variables in programs), is simple to implement, and is more efficient than interpreters that rename variables at run time.
+% Furthermore, the strategy relies on treating terms as closed under substitution, and so provided a bridge to explaining \emph{closures and environments}~\cite{Landin64} in the course we taught.
 
-The idea of distinguishing values from plain terms is not new (for example, \emph{reduction semantics}~\cite{FelleisenH92} commonly make this distinction), but I am not aware of this idea being applied to implement capture avoiding substitution functions outside of our course.\footnote{This judgement is made solely by the author of the present paper. Eelco and I never discussed the novelty of the technique.}
-This paper presents the technique, and shows that the resulting substitution functions are capture avoiding.
-We make the following technical contributions:
-%
+I never had the chance to discuss the novelty of the technique with Eelco.
+However, the technique we used in the course does not seem widely known or used.
+In this paper we explain and explore the technique and its limitations.
+The main known limitation of using the technique for defining interpreters is that it assumes an interpretation strategy that does not do evaluation under binders.
+For the toy language interpreters we used for teaching this was not a problem; for more serious languages and applications it may be.
+
+The second technique for capture-avoiding named substitution that we explore is an existing technique which we were made aware of by a reviewer of a previous version of this paper.
+The technique is due to Berkling~and~Fehr~\cite{berkling1982amodification} and has similar benefits as the technique we used in our course: it does not rename variables and is also more efficient than interpreters that rename variables at run time.
+Furthermore, the technique does not make assumptions on behalf of interpretation strategy, and it supports evaluation under binders.
+On the other hand, Berkling~and~Fehr's substitution technique is more involved to implement and is a little less efficient than the renamingless substitution strategy that we used in our course.
+
+The renamingless techniques we consider in this paper are not new (at least the second technique is not; we do not expect that the first one is either, though we have not found it in the literature).
+But we believe they deserve to be more widely known.
+Our contributions are:
 \begin{itemize}
-\item We present a technique (\cref{sec:interpretation}) for renamingless capture avoiding substitution, that is about as simple to understand and implement as substitution for closed terms.
-\item We present an intrinsically scoped capture avoiding normalizer (\cref{sec:normalization}) for the untyped $\lambda$-calculus, which explains how and why our technique is capture avoiding.
+
+\item
+  We describe (\cref{sec:interpretation}) a simple, renamingless substitution technique for languages with open terms where evaluation does not happen under binders.
+  The meta-theory of this technique is left for future work, but we discuss and illustrate known limitations in terms of examples.
+
+\item
+  We describe (\cref{sec:shifting}) an existing and more general technique~\cite{berkling1982amodification} which has similar benefits and does not suffer from the same limitations.
+  However, its implementation is a little more involved to implement than the simple renamingless substitution strategy, and it is a little less efficient.
+
 \end{itemize}
-%
-The paper is a literate Agda file whose sources can be found here: \url{https://github.com/casperbp/intrinsically-capture-avoiding}
+
+
+
+
+
+
+% In \cref{sec:shifting} we discuss how our renamingless substitution strategy is a variation on the more general renamingless substitution strategy due to , which is in turn closely related to de~Bruijn~substitution~\cite{de_Bruijn_1972} (although Berkling independently discovered the substitution strategy).
+% As shown by Berkling~and~Fehr, this more general renamingless substitution strategy also works for evaluation strategies that do evaluation under binders.
+% Unlike traditional de~Bruijn~indices, the substitution function we present in \cref{sec:2-interpretation} and Berkling-Fehr substitution which we discuss in \cref{sec:shifting} preserves the names of input programs.
+
+% The idea of distinguishing values from plain terms is not new (for example, \emph{reduction 
+%  semantics}~\cite{FelleisenH92} commonly make this distinction), and the renamingless approach that 
+% but I am not aware of this idea being applied to implement capture avoiding substitution functions outside of our course.\footnote{This judgement is made solely by the author of the present paper. Eelco and I never discussed the novelty of the technique.}
+% This paper presents the technique, and shows that the resulting substitution functions are capture avoiding.
+
+% While the substitution techniques we consider in this paper are not new, they do not seem widely known.
+% Yet, the substitution strategy has some unique trade-offs: it is about as simple to define as substitution for closed terms; it avoids the inefficiency associated with having to globally rename variables; and it preserves the names of input programs.
+% Eelco and I found these trade-offs attractive for the purpose of teaching students how to implement definitional interpreters with capture avoiding substitution.
+% The unique list of trade-offs may also make the techniques attractive for other purposes.
+% The contribution of this paper is to shed light on these techniques and their trade-offs, and to make the techniques available to a wider audience.
+
+This paper is a literate Haskell document, available at \url{https://github.com/casperbp/renamingless-capture-avoiding}, and is structured as follows.
+\cref{sec:interpretation} describes a simple renamingless capture avoiding substitution strategy and its known limitations and \cref{sec:shifting} describes Berkling-Fehr substitution which has similar benefits and fewer limitations but is less simple to implement.
+\cref{sec:related} discusses related work and \cref{sec:conclusion} concludes.
 
 
 %%% Local Variables:
