@@ -124,7 +124,7 @@ Here |fresh x y s e| is a function that returns a fresh identifier if $x \not\in
 \begin{code}
 fresh :: String -> String -> Expr0 -> Expr0 -> String
 fresh x y s e = let fvs = fv0 s
-                     fve = fv0 e
+                    fve = fv0 e
                  in if (not (x `elem` fve) || not (y `elem` fvs))
                     then y
                     else freshify y (fvs ++ fve)

@@ -20,15 +20,14 @@ Following, e.g., Curry~and~Feys~\cite{curry1958combinatory}, Plotkin~\cite{Plotk
 For example, by renaming the $\lambda$ bound variable $y$ to $r$, we can correctly reduce term (\ref{eq0}) to $(\lambda r .\, ((\lambda z .\, y)\ 1) + r)\ 2$.
 
 While a renaming based substitution strategy provides a well behaved and versatile approach to avoiding name capture, it has some trade-offs.
-For example, since renaming typically works by fully traversing terms, definitional interpreters that use renaming based substitution are typically relatively slow.
-Another trade-off is that renaming gives rise to intermediate terms whose names differ from the names in source programs.
+For example, since renaming typically works by traversing terms, interpreters that rename at run time are typically slow.
+Furthermore, renaming gives intermediate terms whose names differ from the names in source programs.
 For applications where intermediate terms are user facing (e.g., in error messages, or in systems based on rewriting) this can be confusing.
-For this reason, definitional interpreters often use alternative techniques for (lazy) capture avoiding substitution, such as \emph{closures}~\cite{Landin64}, \emph{de Bruijn indices}~\cite{de_Bruijn_1972}, \emph{explicit substitutions}~\cite{AbadiCCL91}, or \emph{locally nameless}~\cite{Chargueraud12}.
-However, traditional named variable substitution is sometimes preferred because intermediate terms are easy to inspect and compare.
+For this reason, interpreters often use alternative techniques for (lazy) capture avoiding substitution, such as \emph{closures}~\cite{Landin64}, \emph{De Bruijn indices}~\cite{de_Bruijn_1972}, \emph{explicit substitutions}~\cite{AbadiCCL91}, \emph{locally nameless}~\cite{Chargueraud12}.
+However, traditional named variable substitution is sometimes preferred because of its simple and direct nature.
 
-This paper considers and explores named substitution strategies that do not rely on renaming variables.
-We explore two possible solutions to this problem, neither of which seem to be widely known or at least not widely used.
-The purpose of this paper is to increase awareness of these techniques.
+This paper explores named substitution strategies that do not rename variables.
+We explore two such strategies.
 % They may also be preferable for teaching the $\lambda$-calculus because the aforementioned techniques are essentially clever encodings of naive substitution.
 %Name capture is only a problem  perform evaluation involving free variables.
 % While many modern programming languages disallow terms with free variables, there are use cases where free variables are useful, such as dependent type checkers~\cite{Huet1975aunification,Pareto1995ALF}, systems based on rewriting (such as mCRL2~\cite{DBLP:books/mit/GrooteM2014}), and definitional interpreters used for teaching.
@@ -51,18 +50,17 @@ Here the delimited \colorbox{gray!30}{highlighted} term is closed under substitu
 %
 The result term computed by these reduction steps is equivalent to using a renaming based substitution function.
 However, the renamingless substitution strategy we used does not rename variables (and so preserves the names of bound variables in programs), is simple to implement, and is more efficient than interpreters that rename variables at run time.
-% Furthermore, the strategy relies on treating terms as closed under substitution, and so provided a bridge to explaining \emph{closures and environments}~\cite{Landin64} in the course we taught.
-
+A limitation of the renamingless substitution strategy is that it is not well-behaved for reduction strategies that perform evaluation under binders.
+That is, the strategy assumes that we treat any function expression $\lambda x . e$ as a value, such that the expression $e$ is only ever evaluated if we apply the function.
+While this limits the applicability of the strategy, many operational semantics of $\lambda$s adhere to this restriction~\cite{Landin64,DBLP:books/daglib/0069232,pierce2002types,reynolds98definitional}, including the ones we considered in the course we taught together.
 I never had the chance to discuss the novelty of the technique with Eelco.
 However, the technique we used in the course does not seem widely known or used.
 In this paper we explain and explore the technique and its limitations.
-The main known limitation of using the technique for defining interpreters is that it assumes an interpretation strategy that does not do evaluation under binders.
-For the toy language interpreters we used for teaching this was not a problem; for more serious languages and applications it may be.
 
-The second technique for capture-avoiding named substitution that we explore is an existing technique which we were made aware of by a reviewer of a previous version of this paper.
-The technique is due to Berkling~and~Fehr~\cite{berkling1982amodification} and has similar benefits as the technique we used in our course: it does not rename variables and is also more efficient than interpreters that rename variables at run time.
+The second technique for capture-avoiding named substitution that we explore is an existing technique by Berkling~and~Fehr~\cite{berkling1982amodification} which we were made aware of by a reviewer of a previous version of this paper.
+The technique has similar benefits as the technique we used in our course: it does not rename variables and is more efficient than interpreters that do renaming at run time.
 Furthermore, the technique does not make assumptions on behalf of interpretation strategy, and it supports evaluation under binders.
-On the other hand, Berkling~and~Fehr's substitution technique is more involved to implement and is a little less efficient than the renamingless substitution strategy that we used in our course.
+On the other hand, Berkling~and~Fehr's substitution technique is more involved to implement and is a little less efficient than the renamingless substitution strategy that Eelco and I used in our course.
 
 The renamingless techniques we consider in this paper are not new (at least the second technique is not; we do not expect that the first one is either, though we have not found it in the literature).
 But we believe they deserve to be more widely known.
@@ -71,11 +69,12 @@ Our contributions are:
 
 \item
   We describe (\cref{sec:interpretation}) a simple, renamingless substitution technique for languages with open terms where evaluation does not happen under binders.
-  The meta-theory of this technique is left for future work, but we discuss and illustrate known limitations in terms of examples.
+  The meta-theory of this technique is left for future work.
+  We discuss and illustrate known limitations in terms of examples.
 
 \item
   We describe (\cref{sec:shifting}) an existing and more general technique~\cite{berkling1982amodification} which has similar benefits and does not suffer from the same limitations.
-  However, its implementation is a little more involved to implement than the simple renamingless substitution strategy, and it is a little less efficient.
+  However, its implementation is a little more involved to implement than the simple renamingless substitution strategy in \cref{sec:interpretation}, and it is a little less efficient.
 
 \end{itemize}
 
