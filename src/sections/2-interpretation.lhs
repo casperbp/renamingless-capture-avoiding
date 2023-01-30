@@ -86,8 +86,7 @@ interp0 (Num0 z)      = Num0 z
 
 The substitution function |subst0| relies on an implicit assumption that expressions are closed; i.e., do not contain free variables.
 If we want to support \emph{open expressions} (i.e., expressions that may contain free variables), we must take care to avoid variable capture.
-A traditional approach~\cite{Plotkin75} is to rename variables during interpretation.
-Let |subst01| be a function whose cases are the same as |subst0|, except for the |Lam0| case:
+A traditional approach~\cite{Plotkin75} is to rename variables during interpretation, as implemented by the function |subst01| whose cases are the same as |subst0|, except for the |Lam0| case:
 %
 %format gray (x) = "\colorbox{black!10}{$" x "$}"
 %if False
@@ -160,7 +159,7 @@ mkDeepApp n = go n (Lam0 "x" (Var0 "x"))
 While this renaming based substitution strategy provides a relatively conceptually straightforward solution to the name capture problem, it requires an approach to generating fresh variables, and, since it performs two recursive calls to |subst01|, it is inherently less efficient than the substitution function from \cref{sec:interpreting-closed}---even in a lazy language like Haskell.
 Furthermore, depending on how |fresh| is implemented, the interpreter may not preserve the names of $\lambda$-bound variables.
 In the next section we introduce an simple alternative substitution strategy which does not rename or generate fresh variables, and which has similar efficiency as substitution for closed expressions.
-The substitution strategy is capture-avoiding for languages that do not evaluate under binders.
+% The substitution strategy is capture-avoiding for languages that do not evaluate under binders.
 
 
 \subsection{Interpreting Open Expressions with Renamingless Substitution}
@@ -178,7 +177,7 @@ The substitution strategy is capture-avoiding for languages that do not evaluate
 Let us revisit the interpretation function |interp0| from \cref{sec:interpreting-closed}.
 Because our interpreter eagerly applies substitutions whenever it can, and because evaluation always happens at the top-level, never under binders, we know the following.
 Whenever the interpreter reaches an application expression $e_1\ e_2$, we know that \emph{any variable that occurs free in $e_2$ corresponds to a variable that was free to begin with}.
-The same goes for the expressions resulting from interpreting $e_2$.
+% The same goes for the expressions resulting from interpreting $e_2$.
 We can exploit this knowledge in our interpreter and substitution function.
 To this end, we introduce a dedicated expression form (the highlighted |Clo1| constructor below) which delimits expressions that have been closed under substitutions such that we never propagate substitutions past this closure delimiter:
 \\
@@ -228,7 +227,9 @@ interp1 (Clo1 e)      = e
 %
 Whereas |interp0| explicitly crashes when encountering a free variable or when attempting to apply a non-function to a number, |interp1| may return a ``stuck'' term in case it encounters a free variable or an application expression that attempts to apply a value other than a function.
 The last case of |interp1| says that, when the interpreter encounters a closed expression, it ``unpacks'' the closure.
-This unpacking will not cause accidental capture: because interpretation only happens at the top-level, never under binders, unpacking can never cause variable capture!
+This unpacking will not cause accidental capture:
+interpretation never happens under binders, so the only way the unpacked term can end up under a binder is via substitution.
+However, |interp1| only calls substitution on terms closed with |Clo1|, thereby undoing the unpacking to prevent accidental capture.
 
 To illustrate how |interp1| works, let us consider how to interpret $((\lambda f.\, \lambda y.\, f\ 0)\ (\lambda z.\, y)\ 1)$.
 The rewrites below informally illustrate the interpretation process, where for brevity we use $\lambda$ notation instead of the corresponding constructors in Haskell and \colorbox{gray!30}{$\lfloor e \rfloor$} instead of |Clo1 e|:
@@ -257,7 +258,7 @@ However, the renamingless substitution strategy in |subst1| and |interp1| relies
 %format Num11 = Num1
 %format Clo11 = "\textit{Clo}_1"
 
-The renamingless substitution strategy from \cref{sec:interpreting-open} assumes that the terms being closed have been closed under \emph{all substitutions of variables bound in the context}.
+The renamingless substitution strategy from \cref{sec:interpreting-open} assumes that terms under a |Clo11| have been closed under \emph{all substitutions of variables bound in the context}.
 Interpretation strategies that evaluate under binders violate this assumption.
 For example, consider the interpreter given by |normalize1| whose highlighted recursive call performs evaluation under a $\lambda$ binder:
 %
@@ -302,9 +303,8 @@ However, using |normalize1|, the free variable $y$ is captured:
 \begin{align*}
       &|normalize1|\ ((\lambda x.\, \lambda y.\, x)\ y)\\
 |==|\ &|normalize1|\ (\lambda y.\, \lfloor y \rfloor)\\
-|==|\ &\lambda y.\, |normalize1|\ \lfloor y \rfloor\\
-|==|\ &\lambda y.\, y 
+|==|\ &\lambda y.\, \color{red}{|normalize1|\ \lfloor y \rfloor}\\
+|==|\ &\lambda y.\, \color{red}{y}
 \end{align*}
 %
-The next section discusses a more general substitution strategy due to Berkling~and~Fehr~\cite{berkling1982amodification} which does not have this limitation, which does not rename variables, and which is more efficient than the renaming based approach in \cref{sec:intermezzo}.
-% While Berkling-Fehr substitution is more involved to implement than our simple renamingless substitution strategy discussed in \cref{sec:interpreting-open}, we argue (in \cref{sec:relation-renaming}) that our renamingless substitution strategy is related to Berkling-Fehr substitution, but a little less efficient than the renamingless approach from \cref{sec:interpreting-open}.
+The next section discusses a more general substitution strategy due to Berkling~and~Fehr~\cite{berkling1982amodification} which does not have this limitation, which does not rename variables, and which is more efficient than the renaming based approach in \cref{sec:intermezzo} but less efficient than the renamingless substitution strategy discussed in~\cref{sec:interpreting-open}.
