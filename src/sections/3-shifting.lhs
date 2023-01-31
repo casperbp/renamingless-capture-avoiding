@@ -57,7 +57,7 @@ data Expr2
 %endif
 \end{minipage}
 \vline
-\begin{minipage}{0.695\linewidth}
+\begin{minipage}{0.595\linewidth}
 \begin{code}
 data Index = I { depth :: Nat, name :: String }
 \end{code}
