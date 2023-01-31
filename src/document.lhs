@@ -42,7 +42,7 @@
 % First names are abbreviated in the running head.
 % If there are more than two authors, 'et al.' is used.
 
-\Copyright{Jane Open Access and Joan R. Public} %TODO mandatory, please use full first names. LIPIcs license is "CC-BY";  http://creativecommons.org/licenses/by/3.0/
+\Copyright{Casper Bach Poulsen} %TODO mandatory, please use full first names. LIPIcs license is "CC-BY";  http://creativecommons.org/licenses/by/3.0/
 
 % \begin{CCSXML}
 % <ccs2012>
@@ -62,9 +62,9 @@
 \ccsdesc[500]{Software and its engineering~Semantics}
 \ccsdesc[300]{Theory of computation~Logic and verification}
 
-\keywords{Capture-avoiding substitution, Untyped lambda calculus, Definitional interpreter} %TODO mandatory; please add comma-separated list of keywords
+\keywords{Capture-avoiding substitution, lambda calculus, definitional interpreter} %TODO mandatory; please add comma-separated list of keywords
 
-%\category{} %optional, e.g. invited paper
+\category{Research}
 
 %\relatedversion{} %optional, e.g. full version hosted on arXiv, HAL, or other respository/website
 %\relatedversiondetails[linktext={opt. text shown instead of the URL}, cite=DBLP:books/mk/GrayR93]{Classification (e.g. Full Version, Extended Version, Previous Version}{URL to related version} %linktext and cite are optional
@@ -74,21 +74,21 @@
 
 %\funding{(Optional) general funding statement \dots}%optional, to capture a funding statement, which applies to all authors. Please enter author specific funding statements as fifth argument of the \author macro.
 
-%\acknowledgements{I want to thank \dots}%optional
+%\acknowledgements{I want to thank }
 
-%\nolinenumbers %uncomment to disable line numbering
+\nolinenumbers %uncomment to disable line numbering
 
 %Editor-only macros:: begin (do not touch as author)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\EventEditors{John Q. Open and Joan R. Access}
-\EventNoEds{2}
-\EventLongTitle{42nd Conference on Very Important Topics (CVIT 2016)}
-\EventShortTitle{CVIT 2016}
-\EventAcronym{CVIT}
-\EventYear{2016}
-\EventDate{December 24--27, 2016}
-\EventLocation{Little Whinging, United Kingdom}
+\EventEditors{Ralf L\"{a}mmel, Peter D. Mosses, and Friedrich Steimann}
+\EventNoEds{3}
+\EventLongTitle{Eelco Visser Commemorative Symposium (EVCS 2023)}
+\EventShortTitle{EVCS 2023}
+\EventAcronym{EVCS}
+\EventYear{2023}
+\EventDate{April 5, 2023}
+\EventLocation{Delft, The Netherlands}
 \EventLogo{}
-\SeriesVolume{42}
+\SeriesVolume{109}
 \ArticleNo{23}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
