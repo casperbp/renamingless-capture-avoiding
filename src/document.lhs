@@ -51,16 +51,10 @@
 %        <concept_desc>Software and its engineering~Semantics</concept_desc>
 %        <concept_significance>500</concept_significance>
 %        </concept>
-%    <concept>
-%        <concept_id>10003752.10003790.10002990</concept_id>
-%        <concept_desc>Theory of computation~Logic and verification</concept_desc>
-%        <concept_significance>300</concept_significance>
-%        </concept>
 %  </ccs2012>
 % \end{CCSXML}
- 
+
 \ccsdesc[500]{Software and its engineering~Semantics}
-\ccsdesc[300]{Theory of computation~Logic and verification}
 
 \keywords{Capture-avoiding substitution, lambda calculus, definitional interpreter} %TODO mandatory; please add comma-separated list of keywords
 
