@@ -67,7 +67,7 @@ data Index = I { depth :: Nat, name :: String }
 \end{code}
 %endif
 \end{minipage}
-%
+\\
 %format Z = 0
 %
 Here the (record) data constructor |I n x| corresponds to an $n$-ary application of the special $\#$ operator to the name $x$; i.e., $\#^n x$.
